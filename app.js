@@ -14,6 +14,7 @@ const erroEl      = document.getElementById('msg-erro')
 const paginacaoEl = document.getElementById('paginacao')
 const buscaInput  = document.getElementById('busca')
 
+// ===== TRADUÇÕES =====
 function traduzirStatus (status) {
     const mapa = { Alive: 'Vivo', Dead: 'Morto', unknown: 'Desconhecido' }
     return mapa[status] || status
@@ -30,35 +31,80 @@ function classeStatus (status) {
     return 'dot-unknown'
 }
 
-function preencherCards (personagens) {
-    const tres = personagens.slice(0, 3)
+// ===== CARDS DINÂMICOS (CORRIGIDO) =====
+function preencherCards(personagens) {
+    gridEl.innerHTML = '' // limpa antes
 
-    tres.forEach((p, i) => {
-        document.getElementById(`card-${i}-img`).src              = p.image
-        document.getElementById(`card-${i}-img`).alt              = p.name
-        document.getElementById(`card-${i}-nome`).textContent     = p.name
-        document.getElementById(`card-${i}-status`).textContent   = traduzirStatus(p.status)
-        document.getElementById(`card-${i}-meta`).textContent     = `${p.species} — ${traduzirGenero(p.gender)}`
-        document.getElementById(`card-${i}-local`).textContent    = `📍 ${p.location.name}`
+    personagens.forEach((p, i) => {
 
-        const dot = document.getElementById(`card-${i}-dot`)
-        dot.className = `dot ${classeStatus(p.status)}`
+        const card = document.createElement('div')
+        card.classList.add('card')
+        card.style.animationDelay = `${i * 0.05}s`
 
-        const btn = document.getElementById(`card-${i}-btn`)
-        btn.onclick = () => abrirModal(p.id)
+        const img = document.createElement('img')
+        img.classList.add('card-img')
+        img.src = p.image
+        img.alt = p.name
 
-        document.getElementById(`card-${i}`).style.animationDelay = `${i * 0.05}s`
+        const body = document.createElement('div')
+        body.classList.add('card-body')
+
+        const nome = document.createElement('div')
+        nome.classList.add('card-name')
+        nome.textContent = p.name
+
+        const statusDiv = document.createElement('div')
+        statusDiv.classList.add('card-status')
+
+        const dot = document.createElement('span')
+        dot.classList.add('dot', classeStatus(p.status))
+
+        const statusTexto = document.createElement('span')
+        statusTexto.textContent = traduzirStatus(p.status)
+
+        statusDiv.appendChild(dot)
+        statusDiv.appendChild(statusTexto)
+
+        const meta = document.createElement('div')
+        meta.classList.add('card-meta')
+        meta.textContent = `${p.species} — ${traduzirGenero(p.gender)}`
+
+        const local = document.createElement('div')
+        local.classList.add('card-meta')
+        local.textContent = `📍 ${p.location.name}`
+
+        const btnContainer = document.createElement('div')
+        btnContainer.classList.add('btn-learn')
+
+        const btn = document.createElement('button')
+        btn.textContent = 'LEARN MORE'
+        btn.addEventListener('click', () => abrirModal(p.id))
+
+        btnContainer.appendChild(btn)
+
+        body.appendChild(nome)
+        body.appendChild(statusDiv)
+        body.appendChild(meta)
+        body.appendChild(local)
+        body.appendChild(btnContainer)
+
+        card.appendChild(img)
+        card.appendChild(body)
+
+        gridEl.appendChild(card)
     })
 
     gridEl.style.display = 'grid'
 }
 
+// ===== URL =====
 function montarUrl () {
     const params = new URLSearchParams({ page: estado.pagina })
     if (estado.query) params.set('name', estado.query)
     return `${BASE_URL}?${params}`
 }
 
+// ===== BUSCA =====
 async function buscarPersonagens () {
     erroEl.style.display    = 'none'
     statsEl.textContent     = ''
@@ -107,7 +153,10 @@ function renderizarPaginacao () {
     const btnPrev = document.createElement('button')
     btnPrev.textContent = '←'
     btnPrev.disabled    = pagina === 1
-    btnPrev.addEventListener('click', () => { estado.pagina--; buscarComTratamento() })
+    btnPrev.addEventListener('click', () => {
+        estado.pagina--
+        buscarComTratamento()
+    })
 
     const info = document.createElement('span')
     info.textContent      = `${pagina} / ${totalPaginas}`
@@ -117,7 +166,10 @@ function renderizarPaginacao () {
     const btnNext = document.createElement('button')
     btnNext.textContent = '→'
     btnNext.disabled    = pagina === totalPaginas
-    btnNext.addEventListener('click', () => { estado.pagina++; buscarComTratamento() })
+    btnNext.addEventListener('click', () => {
+        estado.pagina++
+        buscarComTratamento()
+    })
 
     paginacaoEl.appendChild(btnPrev)
     paginacaoEl.appendChild(info)
